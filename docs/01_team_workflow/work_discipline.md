@@ -165,5 +165,5 @@ AI가 짠 코드를 그대로 커밋하지 않는다. **무엇을 하는 코드�
 - `results/metrics.json` 스키마 미확정 — 파이프라인 1차 구성 시 함께 확정한다
 - `src/check_report.py` 미착수 — 준비기 산출물
 - `docs/05_session_handoff.md` 미생성
-- 원격 저장소 연결 · main 브랜치 보호 미완 (팀장 계정 작업 필요). 절차는 `git_policy.md` 6절
+- main 브랜치 보호 룰셋 미적용 (팀장 계정 작업 필요). 절차는 `git_policy.md` 6절. 원격 연결·초기 push는 2026-08-24 완료
 - `results/metrics.json` 실물 미생성 — 파이프라인 1차 실행 시 생성된다
