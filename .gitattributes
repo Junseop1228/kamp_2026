@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+# 노트북 — 텍스트로 diff하되 자동 병합은 금지한다.
+# 두 사람이 같은 .ipynb를 건드리면 조용히 깨진 JSON이 되는 대신 충돌로 멈춘다.
+# 소유권 규칙(git_policy.md 4절)의 강제 장치다.
+*.ipynb text eol=lf merge=binary
+
+*.png binary
+*.jpg binary
+*.hwp binary
+*.hwpx binary
+*.pdf binary
+*.xlsx binary
+*.pptx binary
+*.docx binary

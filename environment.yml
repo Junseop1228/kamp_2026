@@ -1,0 +1,5 @@
+# 패키지 목록은 D-005 확정 후 채운다. 임의로 버전을 적지 않는다.
+name: kamp2026
+channels:
+  - conda-forge
+dependencies: []
