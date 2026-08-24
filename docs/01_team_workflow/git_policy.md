@@ -80,27 +80,38 @@ PR 본문에 아래 네 줄을 넣는다.
 
 리뷰는 팀장이 본다. 실행기에는 self-merge를 허용하되 PR은 반드시 남긴다.
 
-## 6. 원격 저장소 · 브랜치 보호 (팀장 작업)
+## 6. 원격 저장소 · 브랜치 보호
 
-**리포지토리는 Private으로 만든다.** 대회 종료 전까지 공개하지 않는다. 부정제출 시비를 만들 이유가 없다.
+원격 `origin` = https://github.com/Junseop1228/kamp_2026 (연결 완료, 2026-08-24)
 
-GitHub에서 빈 리포지토리를 생성한 뒤(README·gitignore 체크 해제) 로컬에서 연결한다.
+**공개 범위는 Public이다.** 무료 계정에서 Private 리포에는 브랜치 룰셋을 걸 수 없어 공개를 택했다. 결정 근거와 감수한 리스크는 `../03_decision_log.md` D-001 참조.
 
-```
-git remote add origin https://github.com/<계정>/kamp_2026.git
-git push -u origin main
-```
+공개 리포이므로 아래를 지킨다.
 
-이어서 GitHub 웹에서 보호 규칙을 건다. Settings → Branches → Add branch ruleset (또는 Branch protection rules).
+- **개인 식별정보를 커밋하지 않는다.** 실명, 소속, 학번, 연락처, 증빙서류. 노트 디렉토리는 역할 기준이다 (`../../notes/README.md`)
+- **자격증명을 커밋하지 않는다.** 토큰, API 키, 계정 정보. `.env`는 `.gitignore` 대상이다
+- **원본 데이터셋을 커밋하지 않는다.** `data/`는 비추적. 재배포 조건이 불명확하다
+- 제출 시점에 `submission-2026-10-08` 태그를 남긴다. 커밋 이력이 선후관계 증거가 된다
 
-- 대상 브랜치 `main`
-- Require a pull request before merging — 켠다
-- Require approvals — **0으로 둔다.** 3인 팀에 강제 승인을 걸면 실행기에 서로가 병목이 된다
-- Allow force pushes / Allow deletions — 끈다
-- Do not allow bypassing the above settings — 켠다. 팀장 본인도 막아야 의미가 있다
+### 브랜치 보호 설정 (팀장 작업)
 
-팀원 초대는 Settings → Collaborators에서 Write 권한으로 2명.
+Settings → Rules → Rulesets → New ruleset → New branch ruleset
 
+- Ruleset Name `main-protection` / Enforcement status **Active**
+- Target branches → Include default branch
+- Require a pull request before merging — 켠다. **Required approvals는 0.** 3인 팀에 강제 승인을 걸면 실행기에 서로가 병목이 된다
+- Block force pushes — 켠다
+- Restrict deletions — 켠다
+- Require status checks / signed commits / linear history — 끈다
+- Bypass list는 비워둔다. 팀장 본인도 막아야 의미가 있다
+
+### 협업자
+
+Settings → Collaborators에서 팀원 2명을 **Write** 권한으로 초대한다. Admin·Maintain은 주지 않는다.
+
+### 기타 설정
+
+Settings → General에서 Wikis · Projects · Discussions를 끈다. Issues는 켜둔다.
 ## 7. 추적 · 비추적 경계
 
 | 경로 | 상태 | 이유 |
