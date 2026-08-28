@@ -8,13 +8,45 @@ data/*
 # results/ = 보고용 확정 산출물(metrics.json, figures/). 반드시 추적한다. 여기에 절대 추가하지 말 것.
 outputs/
 
+# 모델/대용량 실험 산출물
+*.pkl
+*.pickle
+*.joblib
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.h5
+*.hdf5
+*.parquet
+
 # ── 환경 · 캐시 ───────────────────────────
 .env
+.env.*
+!.env.example
 __pycache__/
 *.py[cod]
+*.so
 .ipynb_checkpoints/
 .conda/
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 *.log
+
+# ── Jupyter / ML 실험 캐시 ────────────────
+.mlflow/
+mlruns/
+lightning_logs/
+wandb/
+catboost_info/
+optuna.db
 
 # ── OS · 에디터 ───────────────────────────
 .DS_Store
