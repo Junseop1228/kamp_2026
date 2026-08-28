@@ -1,0 +1,2 @@
+experiment_id,date,owner,dataset,task,target,split_strategy,validation_metric,model,major_change,score,baseline_score,delta,hypothesis,leakage_check,notes,next_experiment,status
+E000,,,,,,,,Dummy / baseline,,,,,,,,,planned
