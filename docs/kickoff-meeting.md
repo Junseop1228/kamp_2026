@@ -24,8 +24,11 @@
 ## 논의할 것
 
 - 단순 모델 성능 극대화가 우선인가?
+  - 생각보다 경진대회 기출 기준으로는 중요하진 않았다. (30% 점수)
 - 분석 깊이와 제조업 해석을 어느 정도까지 가져갈 것인가?
-- 복잡한 최신 모델보다 강한 baseline + 검증 + domain insight를 우선할지에 대한 여부 
+  - 오히려 이 쪽이 중요하다. (70% 점수)
+- 복잡한 최신 모델보다 강한 baseline + 검증 + domain insight를 우선할지에 대한 여부
+  - 오히려 이 쪽이 중요하다. 
 
 - 팀 결과 방향성 예시:
 ```text
@@ -43,11 +46,12 @@
 ### 오늘 결정
 
 - 팀 경쟁 전략:
-  - 
+  - 분석/해석 포커스
 - 우리가 피할 전략:
-  - 
+  - 최적화/성능 극대화 
 - 실제 문제 공개 후 핵심 주제 확정 시점:
-  - 
+  - 9월 21일에 문제 공개
+  - 9월 21~23일 사이에 온라인/오프라인 회의 
 
 ---
 
@@ -78,6 +82,7 @@
 - 모델 실행 pipeline
 - HPO / challenger model
 - 결과 저장 및 재현성
+- 데이터 전처리 파이프라인 트래킹 및 설명 가능해야함. (다이어그램 한 장)
 
 ### Domain / Manufacturing
 - Feature 의미 파악
@@ -91,11 +96,11 @@
 
 ### 오늘 결정
 
-- @theguardianofthebed:
-- @junseop1228:
-- @:
-- 최종 Experiment Decision 담당:
-- 발표 통합 담당:
+- @theguardianofthebed: Data/Pipeline
+- @junseop1228: ML / experiment 
+- @tootoo: Domain / Manufacturing
+- 최종 Experiment Decision 담당: 세 명 조율
+- 발표 통합 담당: (미정) (당장은 정할 필요없이 이따 결정)
 
 ---
 
@@ -109,6 +114,8 @@
 [1] 제조 문제 정의
  ↓
 [2] Target / Prediction Horizon 정의 (모델이 예측하고자 하는 최종 목표 값 및 얼마나 먼 미래까지의 범위를 예측할 것인지 정의)
+ ↓
+[2-1] Manufacturing Interpretation (제조업 관점에서의 문제 해석)
  ↓
 [3] Data Audit (데이터의 품질, 무결성, 보안, 그리고 규정 준수 여부를 체계적으로 평가하고 검증)
  ↓
@@ -132,16 +139,10 @@
  ↓
 [13] XAI / SHAP (인공지능(AI)이 내린 예측 결과의 이유를 사람이 이해할 수 있도록 설명 가능한 AI(XAI) 기법 중 하나인 SHAP을 활용해 분석·해석하는 구조나 방식을 설계)
  ↓
-[14] Manufacturing Interpretation (제조업 관점에서의 문제 및 결과 및 모델 해석)
- ↓
-[15] Final Model / Submission / Report 
+[14] Final Model / Submission / Report 
 ```
 
 ## 확정된 팀 규칙
-
-- [ ] 그 외 더 추가...
-
-### 수정 / 추가할 팀 규칙 후보
 
 - [ ] Validation은 모델 튜닝 전에 결정한다. (Data Leakage, overfitting)
 - [ ] Test / Public Leaderboard를 내부 Validation처럼 반복 사용하지 않는다. (Data leakage, overfitting)
@@ -151,6 +152,11 @@
 - [ ] Feature importance를 인과관계라고 표현하지 않는다.
 - [ ] 같은 Validation / Metric 조건에서 모델을 비교한다.
 - [ ] 모델 성능뿐 아니라 제조업 관점의 FP/FN 비용을 확인한다.
+- [ ] 도메인에 대한 기초 지식 공유한 후 Data audit 3단계 시작.
+- [ ] 소통: 모르는거 애매한거 있으면 확실히 질문하고, 비판적인 의견/태클이 있을수록 좋다.  
+- [ ] 그 외 더 추가...
+
+### 수정 / 추가할 팀 규칙 후보
 
 ---
 
@@ -159,9 +165,47 @@
 Mock의 목적은 모델 사용법을 하나씩 배우는 것이 아니라  
 3명이 실제 대회처럼 전체 Pipeline을 함께 완주하는 것이다.
 
-## Mock Sprint 1 — AI4I Predictive Maintenance
-> 데이터셋 다운로드 링크: https://archive.ics.uci.edu/dataset/601/ai4i%2B2020%2Bpredictive%2Bmaint
-
+## Mock Sprint 1 — KAMP 기출 
+### 문제: : 제조기업의 생산성 향상 및 작업환경 개선을 위한 아이디어를 제시하고 인공지능 알고리즘으로 구현
+- 데이터 종류
+  - 소성가공 품질보증 AI 데이터셋 
+> 데이터셋 다운로드 링크: (추후 첨부 예정)
+### 스케줄 
+```text
+[0] 문제 / 규칙 읽기
+ ↓
+[1] 제조 문제 정의 
+ ↓
+[2] Target / Prediction Horizon 정의 (Deadline: 8.30)
+ ↓
+[2-1] Manufacturing Interpretation (제조업 관점에서의 문제 해석) (Deadline: 8.31)  
+ ↓
+[3] Data Audit
+ ↓ (Deadline: 9.01)
+1 차 회의 (9.02 19:00, Discord)
+ ↓ 
+[4] Leakage Audit (모델 학습 과정에서 데이터 누수(Data Leakage)가 발생했는지 파악하고 검증하는 작업) (중간중간 계속 할 필요가 있다.)
+ ↓
+[5] Validation 설계 (학습된 모델이 새로운 데이터에서도 예측을 잘하는지(일반화 성능)를 평가하기 위해 데이터를 어떻게 나누고 검증할지 계획)
+ ↓
+[6] Metric 결정 (모델이 예측한 결과가 실제 정답과 비교해 얼마나 우수한지 객관적으로 측정할 기준을 선택)
+ ↓
+[7] Dummy / Simple Baseline (본격적인 복잡한 모델을 만들기 전에 구축하는 기준점(비교 대상) 역할을 하는 가장 쉽고 간단한 모델 설계)
+ ↓
+[8] Strong Baselines (현재 가진 데이터와 기술로 달성할 수 있는 현실적이고 강력한 하한선 모델을 설정)
+ ↓
+[9] Feature Engineering (가공되지 않은 원시 데이터(Raw Data)를 머신러닝 알고리즘이 이해하고 최적의 성능을 낼 수 있도록 특성(Feature)을 선택, 생성, 변환하는 전체 과정과 전략을 기획)
+ ↓
+[10] Error Analysis (모델이 예측에 실패한 원인을 체계적으로 파악하고, 성능을 효율적으로 개선하기 위한 전략과 기준을 짜는 것)
+ ↓
+[11] HPO (모델의 성능을 가장 높여주는 최적의 외부 설정값(하이퍼파라미터) 조합을 자동으로 찾아내는 과정과 그 체계를 설계)
+ ↓
+[12] Ensemble / AutoML Challenger (최적의 모델을 도출하기 위해 자동화된 머신러닝(AutoML) 및 앙상블(Ensemble) 기법을 경쟁(Challenger) 구조로 배치하여 검증)
+ ↓
+[13] XAI / SHAP (인공지능(AI)이 내린 예측 결과의 이유를 사람이 이해할 수 있도록 설명 가능한 AI(XAI) 기법 중 하나인 SHAP을 활용해 분석·해석하는 구조나 방식을 설계)
+ ↓
+[14] Final Model / Submission / Report
+```
 ### 완료 조건
 
 - [ ] 문제 정의
@@ -320,4 +364,5 @@ kamp-2026/
 - Experiment ID 규칙:
 - Dataset 공유 방법:
 - 결과 공유 위치:
+- **구글 드라이브 링크**: 
 
