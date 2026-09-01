@@ -165,12 +165,10 @@
 Mock의 목적은 모델 사용법을 하나씩 배우는 것이 아니라  
 3명이 실제 대회처럼 전체 Pipeline을 함께 완주하는 것이다.
 
-## Mock Sprint 1 — KAMP 기출 
-### 문제: : 제조기업의 생산성 향상 및 작업환경 개선을 위한 아이디어를 제시하고 인공지능 알고리즘으로 구현
-- 데이터 종류
-  - 소성가공 품질보증 AI 데이터셋 
-> 데이터셋 다운로드 링크: (추후 첨부 예정)
-### 스케줄 
+## Mock Sprint 1 — AI4I Predictive Maintenance
+> 데이터셋 다운로드 링크: https://archive.ics.uci.edu/dataset/601/ai4i%2B2020%2Bpredictive%2Bmaint
+
+### 팀 협업 파이프라인
 ```text
 [0] 문제 / 규칙 읽기
  ↓
@@ -206,6 +204,41 @@ Mock의 목적은 모델 사용법을 하나씩 배우는 것이 아니라
  ↓
 [14] Final Model / Submission / Report
 ```
+### 완료 조건
+
+- [ ] 문제 정의
+- [ ] Target / Feature 확인
+- [ ] EDA
+- [ ] Leakage audit
+- [ ] Validation
+- [ ] Metric
+- [ ] Simple baseline
+- [ ] Strong baseline
+- [ ] Feature engineering 1개 이상
+- [ ] Error analysis
+- [ ] XAI
+- [ ] 제조업 관점 해석
+- [ ] 5분 결과 공유
+- [ ] 그 외...
+
+### Sprint 1에서 검증할 팀 운영 문제
+
+- Git 협업이 불편하지 않은가?
+- 두 개발자의 작업이 중복되는가?
+- Domain 담당이 너무 늦게 참여하고 있지 않은가?
+- Experiment 기록 방식이 충분한가?
+- 결과를 다른 팀원이 재현할 수 있는가?
+- 그 외...
+
+---
+
+## Mock Sprint 2 — KAMP 기출 
+### 문제: : 제조기업의 생산성 향상 및 작업환경 개선을 위한 아이디어를 제시하고 인공지능 알고리즘으로 구현
+- 데이터 종류
+  - 소성가공 품질보증 AI 데이터셋 
+> 데이터셋 다운로드 링크: (추후 첨부 예정)
+### 스케줄 
+
 ### 완료 조건
 
 - [ ] 문제 정의
