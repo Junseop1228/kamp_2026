@@ -1,0 +1,17 @@
+{
+  "dataset": "injection",
+  "rename": {
+    "Unnamed: 0": "product_id",
+    "PassOrFail": "label"
+  },
+  "data": {
+    "train": {
+      "CN7": "data/raw/injection/moldset_labeled_cn7.csv",
+      "RG3": "data/raw/injection/moldset_labeled_rg3.csv"
+    },
+    "test": {
+      "CN7": "data/raw/injection/moldset_unlabeled_cn7.csv",
+      "RG3": "data/raw/injection/moldset_unlabeled_rg3.csv"
+    }
+  }
+}

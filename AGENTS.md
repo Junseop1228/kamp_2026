@@ -85,6 +85,7 @@
 - 모든 공개 함수에 한 줄 docstring — 무엇을 왜.
 - 타입 힌트를 붙인다.
 - 모듈 경계: `eda` 진단 / `preprocess` 정제 / `features` 파생변수 / `models` 학습·추론 / `evaluate` 평가·해석 / `utils` 공통.
+- `src/framework/`: 7단계 프레임워크(Adapter → Diagnose → Evaluate → Analyze → Prioritize → Infer → Report)의 단계별 파일. 파일 입출력은 루트 `run.py`가 맡고, 단계 함수는 DataFrame을 받는다.
 
 ---
 
