@@ -13,5 +13,15 @@
       "CN7": "data/raw/injection/moldset_unlabeled_cn7.csv",
       "RG3": "data/raw/injection/moldset_unlabeled_rg3.csv"
     }
+  },
+  "cv": {
+    "max_folds": 5
+  },
+  "threshold": {
+    "main_k": "defect_rate",
+    "aux_k": "auto_group_size",
+    "tie_rule": "include_all",
+    "rounding": "half_up",
+    "min_flag": 1
   }
 }

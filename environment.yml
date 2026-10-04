@@ -10,3 +10,5 @@ dependencies:
   - matplotlib==3.11.2
   - jupyter==1.1.1
   - pytest==9.1.1
+variables:
+  PYTHONNOUSERSITE: "1"
