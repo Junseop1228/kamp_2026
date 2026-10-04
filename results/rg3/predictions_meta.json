@@ -1,0 +1,16 @@
+{
+  "line": "RG3",
+  "model": "random_score",
+  "seed": 0,
+  "k": 0.021150592216582064,
+  "n_train": 1182,
+  "n_train_defects": 25,
+  "n_test": 35941,
+  "n_flag_nominal": 760,
+  "n_flag_actual": 760,
+  "limitations": [
+    "labeled와 unlabeled 파일은 표준화 기준이 서로 다르다. 보정하지 않고 기록만 한다(D-004)."
+  ],
+  "alarm": null,
+  "distribution_warning": null
+}
