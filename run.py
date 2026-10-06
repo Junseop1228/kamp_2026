@@ -1,23 +1,26 @@
-"""실행 진입점: 제품군마다 Adapter → Diagnose → Evaluate → Infer를 1회 실행하고 results/에 저장한다.
+"""실행 진입점: 제품군마다 Adapter → Diagnose → Evaluate(후보 비교·선택) → Infer를 1회 실행하고 results/에 저장한다.
 
-실행: conda run -n kamp2026 python run.py
+실행: conda run -n kamp2026 python run.py   (CPU 기준 약 15분, 대부분 guidebook_dae 학습)
 """
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 import config
-from src.framework.adapter import GROUP_COL, LABEL_COL, load_injection
+from src.framework.adapter import GROUP_COL, ID_COL, LABEL_COL, load_injection
 from src.framework.diagnose import check_variable_dictionary, diagnose_report
-from src.framework.evaluate import run_cv, score_repeats
-from src.framework.infer import infer
-from src.models.baselines import RandomScore
+from src.framework.evaluate import (
+    block_split, calibration_summary, oof_summary, run_cv, score_repeats, select_model,
+)
+from src.framework.infer import FLAG_RATE_COL, flag_rate_over_seeds, infer
+from src.models import REGISTRY, make_factory
+from src.models.candidates import SoftVoteEnsemble, _BalancedClassifier
 
 CONFIG_FILE = config.CONFIGS / "injection.json"
-MODEL = RandomScore  # 얇은 관통용. P5에서 선택 모델로 교체한다.
 
 
 def _write_json(path: Path, obj: dict) -> None:
@@ -26,6 +29,63 @@ def _write_json(path: Path, obj: dict) -> None:
 
 def _write_csv(path: Path, df: pd.DataFrame) -> None:
     df.to_csv(path, index=False, lineterminator="\n")
+
+
+def _is_probability(name: str) -> bool:
+    cls = REGISTRY[name]
+    return issubclass(cls, (_BalancedClassifier, SoftVoteEnsemble))
+
+
+def evaluate_line(train, cfg: dict, diag: dict, out: Path) -> tuple[str, dict]:
+    """후보 전부를 5×10 교차검증 → 사전 등록 선택 규칙 → 선택 모델의 보고 전용 분석. (선택 모델, 요약)을 돌려준다."""
+    X, y, g = train.data[train.feature_cols], train.data[LABEL_COL].to_numpy(), train.data[GROUP_COL].to_numpy()
+    params, order, floor = cfg["models"]["params"], cfg["models"]["complexity_order"], cfg["models"]["floor"]
+    max_folds, ro = cfg["cv"]["max_folds"], cfg["report_only"]
+
+    scores, oof = [], []
+    for name in [floor, *order]:
+        rec = run_cv(X, y, g, make_factory(name, params), config.SEEDS, max_folds)
+        scores.append(score_repeats(rec, y).assign(model=name))
+        oof.append(oof_summary(rec, len(y)).assign(model=name, product_id=train.data[ID_COL].to_numpy(), label=y, group=g))
+        print(f"  [{train.line}] {name} CV F1 {scores[-1]['f1'].mean():.4f}", flush=True)
+    scores, oof = pd.concat(scores, ignore_index=True), pd.concat(oof, ignore_index=True)
+    chosen, table = select_model(scores, order, floor, cfg["selection"]["std_ddof"])
+    _write_csv(out / "cv_scores.csv", scores[["model", "seed", "f1", "pr_auc", "n_flag_nominal", "n_flag_actual"]])
+    _write_csv(out / "selection.csv", table)
+    _write_csv(out / "oof_by_model.csv", oof[["model", "product_id", "label", "group", "proba_mean", "flag_rate", "rank_frac_median"]])
+
+    make = make_factory(chosen, params)
+    grouped = scores[scores["model"] == chosen].set_index("seed")
+    leak = score_repeats(run_cv(X, y, g, make, config.SEEDS, max_folds, ignore_groups=True), y).set_index("seed")
+    _write_csv(out / "leakage_contrast.csv", pd.DataFrame({
+        "seed": grouped.index, "f1_grouped": grouped["f1"].to_numpy(), "f1_ignoring_groups": leak["f1"].to_numpy(),
+        "pr_auc_grouped": grouped["pr_auc"].to_numpy(), "pr_auc_ignoring_groups": leak["pr_auc"].to_numpy(),
+    }))
+    sens = score_repeats(run_cv(X.drop(columns=ro["sensitivity_drop"]), y, g, make, config.SEEDS, max_folds), y)
+    _write_csv(out / "sensitivity_20.csv", pd.DataFrame({
+        "seed": grouped.index, "f1_24": grouped["f1"].to_numpy(), "f1_20": sens["f1"].to_numpy(),
+    }))
+    blocks = None
+    if diag["twin_adjacency"]["train"]["row_order_trusted"]:
+        blocks = block_split(X, y, g, make, config.SEEDS[0], ro["block_split"]["n_blocks"])
+        _write_csv(out / "block_split.csv", blocks)
+
+    chosen_oof = oof[oof["model"] == chosen].reset_index(drop=True)
+    _write_csv(out / "oof_predictions.csv", chosen_oof[["product_id", "label", "group", "proba_mean", "flag_rate", "rank_frac_median"]])
+    row = table.set_index("model").loc[chosen]
+    summary = {
+        "selected_model": chosen,
+        "output_type": "probability(prior_correction)" if _is_probability(chosen) else "risk_score",
+        "f1_mean": float(row["f1_mean"]), "f1_std": float(row["f1_std"]),
+        "beats_floor": bool(row["beats_floor"]),
+        "any_candidate_beats_floor": bool(table["beats_floor"].any()),
+        "f1_ignoring_groups_mean": float(leak["f1"].mean()),
+        "f1_20_inputs_mean": float(sens["f1"].mean()),
+        "block_split": None if blocks is None else blocks.to_dict("records"),
+        "calibration": calibration_summary(chosen_oof["proba_mean"].to_numpy(), y) if _is_probability(chosen) else None,
+    }
+    _write_json(out / "model_summary.json", summary)
+    return chosen, summary
 
 
 def main() -> None:
@@ -46,28 +106,28 @@ def main() -> None:
         for name, df in diag_tables.items():
             _write_csv(out / f"diagnose_{name}.csv", df)
 
-        X, y, g = train.data[train.feature_cols], train.data[LABEL_COL].to_numpy(), train.data[GROUP_COL].to_numpy()
-        scores = score_repeats(run_cv(X, y, g, MODEL, config.SEEDS, cfg["cv"]["max_folds"]), y)
-        scores.insert(0, "model", MODEL.name)
-        _write_csv(out / "cv_scores.csv", scores)
+        chosen, summary = evaluate_line(train, cfg, diag, out)
 
         warnings = diag["distribution_warning"]
         limitations = cfg["limitations"] + (
             [f"train·test 분포 차이 경고 {len(warnings)}개 변수(diagnose_shift.csv). 예측 확률의 절대값은 해석하지 않는다."]
             if warnings else []
         )
-        pred, meta = infer(train, test, MODEL, config.SEEDS[0], limitations)
-        meta["distribution_warning"] = warnings
+        if not summary["any_candidate_beats_floor"]:
+            limitations.append("어떤 후보 모델도 무작위 기준모델과 차이가 없다(selection.csv의 beats_floor). 기계 신호만으로는 학습되지 않는 제품군이다.")
+        make = make_factory(chosen, cfg["models"]["params"])
+        pred, meta = infer(train, test, make, config.SEEDS[0], limitations)
+        pred[FLAG_RATE_COL] = flag_rate_over_seeds(train, test, make, config.SEEDS)
+        meta.update({"distribution_warning": warnings, "output_type": summary["output_type"]})
         _write_csv(out / "predictions.csv", pred)
         _write_json(out / "predictions_meta.json", meta)
 
-        adj = diag["twin_adjacency"]["train"]
-        f1 = scores["f1"]
         print(
-            f"[{line}] 진단: 쌍 인접 {adj['adjacent_share']:.3f}(행 순서 신뢰 {adj['row_order_trusted']}), "
-            f"분포 경고 {len(warnings)}개 | {MODEL.name} CV F1 {f1.mean():.4f} ± {f1.std(ddof=1):.4f} "
-            f"(하한 {diag['f1_floor']:.4f}, 상한 {diag['f1_ceiling']:.4f}) | "
-            f"test {meta['n_test']}행, 표시 {meta['n_flag_actual']}개 → {out.relative_to(config.PROJECT_ROOT).as_posix()}"
+            f"[{line}] 선택 {chosen} CV F1 {summary['f1_mean']:.4f} ± {summary['f1_std']:.4f} "
+            f"(무작위보다 나음 {summary['beats_floor']}, 그룹 무시 시 {summary['f1_ignoring_groups_mean']:.4f}, "
+            f"입력 20개 {summary['f1_20_inputs_mean']:.4f}) | test {meta['n_test']}행, 표시 {meta['n_flag_actual']}개, "
+            f"확신도 1.0 비율 {np.mean(pred[FLAG_RATE_COL] == 1.0):.4f} → {out.relative_to(config.PROJECT_ROOT).as_posix()}",
+            flush=True,
         )
 
 

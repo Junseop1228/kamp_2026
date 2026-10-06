@@ -1,0 +1,6 @@
+block,rows,eval_defects,train_defects,status,flagged,caught
+0,243,17,0,학습 불가(학습 블록에 불량 없음),0,0
+1,242,0,17,ok,4,0
+2,242,0,17,ok,4,0
+3,242,0,17,ok,4,0
+4,242,0,17,ok,6,0
