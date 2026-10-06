@@ -1,0 +1,71 @@
+{
+  "line": "RG3",
+  "imbalance": {
+    "train": {
+      "n_rows": 1182,
+      "n_missing": 0,
+      "n_defects": 25,
+      "defect_rate": 0.021150592216582064,
+      "n_defect_groups": 25
+    },
+    "test": {
+      "n_rows": 35941,
+      "n_missing": 0
+    }
+  },
+  "groups": {
+    "train": {
+      "n_rows": 1182,
+      "n_groups": 591,
+      "size_1": 0,
+      "size_2": 591,
+      "size_3plus": 0,
+      "rows_in_multi_share": 1.0,
+      "pairs_0_0": 566,
+      "pairs_0_1": 25,
+      "pairs_1_1": 0,
+      "mixed_groups": 25,
+      "defect_groups": 25
+    },
+    "test": {
+      "n_rows": 35941,
+      "n_groups": 29707,
+      "size_1": 23473,
+      "size_2": 6234,
+      "size_3plus": 0,
+      "rows_in_multi_share": 0.34690186694861025
+    }
+  },
+  "constant_features": {
+    "train": [
+      "Clamp_Open_Position"
+    ],
+    "test": []
+  },
+  "twin_adjacency": {
+    "train": {
+      "n_pairs": 591,
+      "adjacent_share": 0.9712351945854484,
+      "row_order_trusted": true
+    },
+    "test": {
+      "n_pairs": 6234,
+      "adjacent_share": 0.9998395893487327,
+      "row_order_trusted": true
+    }
+  },
+  "defect_concentration": {
+    "n_defects": 25,
+    "first_row": 136,
+    "last_row": 1132,
+    "first_id": 1347,
+    "last_id": 2343,
+    "span_rows": 997,
+    "span_share": 0.8434856175972927
+  },
+  "f1_floor": 0.021150592216582064,
+  "f1_ceiling": 0.6666666666666666,
+  "distribution_warning": [
+    "Clamp_Open_Position:train_constant"
+  ]
+}
