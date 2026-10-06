@@ -33,6 +33,32 @@
     "rounding": "half_up",
     "min_flag": 1
   },
+  "models": {
+    "floor": "random_score",
+    "complexity_order": ["deviation_score", "logistic", "random_forest", "hist_gb", "guidebook_dae", "soft_vote_ensemble"],
+    "params": {
+      "random_score": {},
+      "deviation_score": {},
+      "logistic": {"C": 1.0, "max_iter": 1000},
+      "random_forest": {"n_estimators": 160, "max_depth": 5, "min_samples_leaf": 8},
+      "hist_gb": {"max_iter": 100, "max_leaf_nodes": 7, "min_samples_leaf": 20},
+      "guidebook_dae": {"input_drop": 0.3, "n_copies": 10, "hidden": [15, 5, 15], "batch_size": 30, "max_epochs": 30, "validation_fraction": 0.2, "patience": 5},
+      "soft_vote_ensemble": {"members": ["logistic", "random_forest", "hist_gb"]}
+    },
+    "class_weight": "balanced",
+    "probability": "prior_correction"
+  },
+  "selection": {
+    "metric": "f1",
+    "rule": "paired_diff_within_std",
+    "std_ddof": 1
+  },
+  "report_only": {
+    "leakage_contrast": "stratified_kfold_ignoring_groups",
+    "block_split": {"n_blocks": 5, "assign": "group_first_row"},
+    "sensitivity_drop": ["Plasticizing_Time", "Plasticizing_Position", "Cycle_Time", "Clamp_Open_Position"],
+    "judgment_confidence": "flag_rate_over_seeds"
+  },
   "limitations": [
     "labeled와 unlabeled 파일은 표준화 기준이 서로 다르다. 보정하지 않고 기록만 한다(D-004).",
     "파일마다 변수별로 표준화돼 있어(평균 0·표준편차 1) train·test 평균·표준편차 비교로는 분포 차이를 잡을 수 없다. 차이는 구조 지표(동일입력 쌍 비율, 고상관 변수 쌍 수)로 보고한다(D-008)."
