@@ -21,6 +21,7 @@ from src.framework.evaluate import (
     block_split, calibration_summary, oof_summary, run_cv, score_repeats, select_model,
 )
 from src.framework.infer import FLAG_RATE_COL, flag_rate_over_seeds, infer
+from src.framework.prioritize import alarm_scan, budget_table, sampling_combo
 from src.models import REGISTRY, make_factory
 from src.models.candidates import SoftVoteEnsemble, _BalancedClassifier
 
@@ -133,6 +134,30 @@ def analyze_line(train, cfg: dict, chosen: str, scores: pd.DataFrame, oof: pd.Da
     return summary
 
 
+def prioritize_line(train, cfg: dict, chosen: str, oof: pd.DataFrame, test_proba: np.ndarray, out: Path) -> dict:
+    """검사량 표, 무작위 추가 검사 결합표, 배치 알람(D-012). 비용 가정 없이 개수만 낸다."""
+    X, y, g = _xyg(train)
+    pr = cfg["prioritize"]
+    chosen_oof = oof[oof["model"] == chosen]
+    budget = budget_table(y, chosen_oof["rank_frac_median"].to_numpy(), pr["budgets"], float(y.mean()), aux_k(y, g))
+    _write_csv(out / "budget_table.csv", budget)
+    _write_csv(out / "sampling_combo.csv", sampling_combo(budget, len(y), pr["sampling_rates"]))
+    rec = run_cv(X, y, g, make_factory(chosen, cfg["models"]["params"]), config.SEEDS, cfg["cv"]["max_folds"])
+    reference = [float(np.mean(r["proba"])) for r in rec]
+    threshold, batch_size = max(reference), int(np.median([len(r["idx"]) for r in rec]))
+    labeled = alarm_scan(chosen_oof["proba_mean"].to_numpy(), batch_size, threshold)
+    tested = alarm_scan(test_proba, batch_size, threshold)
+    _write_csv(out / "alarm_labeled.csv", labeled)
+    _write_csv(out / "alarm_test.csv", tested)
+    summary = {
+        "threshold": threshold, "reference_batches": len(reference), "batch_size": batch_size,
+        "labeled_alarm_batches": labeled.loc[labeled["alarm"], "batch"].astype(int).tolist(),
+        "test_batches": int(len(tested)), "test_alarms": int(tested["alarm"].sum()),
+    }
+    _write_json(out / "prioritize_summary.json", summary)
+    return summary
+
+
 def main() -> None:
     """설정 파일의 제품군을 하나씩 독립 실행한다(D-004)."""
     cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
@@ -165,7 +190,7 @@ def main() -> None:
         make = make_factory(chosen, cfg["models"]["params"])
         pred, meta = infer(train, test, make, config.SEEDS[0], limitations)
         pred[FLAG_RATE_COL] = flag_rate_over_seeds(train, test, make, config.SEEDS)
-        meta.update({"distribution_warning": warnings, "output_type": summary["output_type"]})
+        priority = prioritize_line(train, cfg, chosen, oof, pred["proba"].to_numpy(), out)
         _write_csv(out / "predictions.csv", pred)
         _write_json(out / "predictions_meta.json", meta)
 

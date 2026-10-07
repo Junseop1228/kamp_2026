@@ -1,0 +1,10 @@
+{
+  "threshold": 0.03299171542949067,
+  "reference_batches": 50,
+  "batch_size": 242,
+  "labeled_alarm_batches": [
+    0
+  ],
+  "test_batches": 146,
+  "test_alarms": 80
+}
