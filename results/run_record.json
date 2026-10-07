@@ -1,0 +1,25 @@
+{
+  "command": "python run.py",
+  "finished_at": "2026-10-07T19:55:28",
+  "git_commit": "1d1a0c979eea805d1f38d5e49db7a7b5c943cebb",
+  "python": "3.11.16",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "packages": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2"
+  }
+}

@@ -5,6 +5,10 @@
 from __future__ import annotations
 
 import json
+import platform
+import subprocess
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +26,7 @@ from src.framework.evaluate import (
 )
 from src.framework.infer import FLAG_RATE_COL, flag_rate_over_seeds, infer
 from src.framework.prioritize import alarm_scan, budget_table, sampling_combo
+from src.framework import report
 from src.models import REGISTRY, make_factory
 from src.models.candidates import SoftVoteEnsemble, _BalancedClassifier
 
@@ -158,6 +163,45 @@ def prioritize_line(train, cfg: dict, chosen: str, oof: pd.DataFrame, test_proba
     return summary
 
 
+def make_report(cfg: dict) -> None:
+    """results/의 표를 읽어 보고서용 그림을 results/figures/에 만든다(PNG 메타데이터의 버전 문자열은 지워 재현성 유지)."""
+    fig_dir = config.RESULTS / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    lines = list(cfg["data"]["train"])
+    res = {line: config.RESULTS / line.lower() for line in lines}
+    load = lambda line, name: json.loads((res[line] / name).read_text(encoding="utf-8"))
+    figs = {"fig1_pair_share": report.fig_pair_share({line: load(line, "diagnose_summary.json")["groups"] for line in lines}),
+            "fig3_fn_types": report.fig_fn_types({line: load(line, "analysis_summary.json")["fn_type_counts"] for line in lines}),
+            "fig4_budget": report.fig_budget({line: pd.read_csv(res[line] / "budget_table.csv") for line in lines})}
+    for line in lines:
+        oof = pd.read_csv(res[line] / "oof_predictions.csv")
+        chosen = load(line, "model_summary.json")["selected_model"]
+        tag = line.lower()
+        figs[f"fig1_defect_positions_{tag}"] = report.fig_defect_positions(oof["label"].to_numpy(), line)
+        figs[f"fig2_model_f1_{tag}"] = report.fig_model_f1(pd.read_csv(res[line] / "cv_scores.csv"), cfg["models"]["complexity_order"],
+                                                         cfg["models"]["floor"], load(line, "diagnose_summary.json")["f1_ceiling"], chosen, line)
+        figs[f"fig3_importance_{tag}"] = report.fig_importance(pd.read_csv(res[line] / "importance.csv"), line)
+        figs[f"fig3_pdp_{tag}"] = report.fig_pdp(pd.read_csv(res[line] / "pdp_2d.csv"), line)
+        figs[f"fig4_alarm_{tag}"] = report.fig_alarm(pd.read_csv(res[line] / "alarm_labeled.csv"), load(line, "prioritize_summary.json")["threshold"], line)
+    for name, fig in figs.items():
+        fig.savefig(fig_dir / f"{name}.png", metadata={"Software": None})
+        report.plt.close(fig)
+
+
+def write_run_record() -> None:
+    """실행 기록: 환경, seed, 시각, 커밋 해시. 시각이 들어가므로 재현성 비교에서는 이 파일만 뺀다."""
+    import matplotlib, numpy, sklearn  # noqa: E401
+    try:
+        commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=config.PROJECT_ROOT).stdout.strip() or None
+    except OSError:
+        commit = None
+    _write_json(config.RESULTS / "run_record.json", {
+        "command": "python run.py", "finished_at": datetime.now().isoformat(timespec="seconds"), "git_commit": commit,
+        "python": sys.version.split()[0], "platform": platform.platform(), "seeds": list(config.SEEDS),
+        "packages": {"numpy": numpy.__version__, "pandas": pd.__version__, "scikit-learn": sklearn.__version__, "matplotlib": matplotlib.__version__},
+    })
+
+
 def main() -> None:
     """설정 파일의 제품군을 하나씩 독립 실행한다(D-004)."""
     cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
@@ -201,6 +245,10 @@ def main() -> None:
             f"→ {out.relative_to(config.PROJECT_ROOT).as_posix()}",
             flush=True,
         )
+
+
+    make_report(cfg)
+    write_run_record()
 
 
 if __name__ == "__main__":
