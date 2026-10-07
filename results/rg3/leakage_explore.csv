@@ -1,0 +1,3 @@
+model,f1_grouped_mean,f1_ignoring_groups_mean,note
+random_forest,0.014545454545454545,0.004,사후 탐색(D-011)
+hist_gb,0.050909090909090904,0.019613876319758673,사후 탐색(D-011)

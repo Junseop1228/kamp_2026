@@ -1,4 +1,4 @@
-"""실행 진입점: 제품군마다 Adapter → Diagnose → Evaluate(후보 비교·선택) → Infer를 1회 실행하고 results/에 저장한다.
+"""실행 진입점: 제품군마다 Adapter → Diagnose → Evaluate(후보 비교·선택) → Analyze → Infer를 1회 실행하고 results/에 저장한다.
 
 실행: conda run -n kamp2026 python run.py   (CPU 기준 약 15분, 대부분 guidebook_dae 학습)
 """
@@ -12,6 +12,10 @@ import pandas as pd
 
 import config
 from src.framework.adapter import GROUP_COL, ID_COL, LABEL_COL, load_injection
+from src.framework.analyze import (
+    FN_TYPES, aux_k, domain_crosscheck, fn_concentration, fn_types, fp_analysis, interaction_2x2, pdp_2d,
+    permutation_importance_cv, pick_top_pair,
+)
 from src.framework.diagnose import check_variable_dictionary, diagnose_report
 from src.framework.evaluate import (
     block_split, calibration_summary, oof_summary, run_cv, score_repeats, select_model,
@@ -32,13 +36,16 @@ def _write_csv(path: Path, df: pd.DataFrame) -> None:
 
 
 def _is_probability(name: str) -> bool:
-    cls = REGISTRY[name]
-    return issubclass(cls, (_BalancedClassifier, SoftVoteEnsemble))
+    return issubclass(REGISTRY[name], (_BalancedClassifier, SoftVoteEnsemble))
 
 
-def evaluate_line(train, cfg: dict, diag: dict, out: Path) -> tuple[str, dict]:
-    """후보 전부를 5×10 교차검증 → 사전 등록 선택 규칙 → 선택 모델의 보고 전용 분석. (선택 모델, 요약)을 돌려준다."""
-    X, y, g = train.data[train.feature_cols], train.data[LABEL_COL].to_numpy(), train.data[GROUP_COL].to_numpy()
+def _xyg(train):
+    return train.data[train.feature_cols], train.data[LABEL_COL].to_numpy(), train.data[GROUP_COL].to_numpy()
+
+
+def evaluate_line(train, cfg: dict, diag: dict, out: Path):
+    """후보 전부를 5×10 교차검증 → 사전 등록 선택 규칙 → 선택 모델의 보고 전용 분석."""
+    X, y, g = _xyg(train)
     params, order, floor = cfg["models"]["params"], cfg["models"]["complexity_order"], cfg["models"]["floor"]
     max_folds, ro = cfg["cv"]["max_folds"], cfg["report_only"]
 
@@ -85,7 +92,45 @@ def evaluate_line(train, cfg: dict, diag: dict, out: Path) -> tuple[str, dict]:
         "calibration": calibration_summary(chosen_oof["proba_mean"].to_numpy(), y) if _is_probability(chosen) else None,
     }
     _write_json(out / "model_summary.json", summary)
-    return chosen, summary
+    return chosen, summary, scores, oof
+
+
+def analyze_line(train, cfg: dict, chosen: str, scores: pd.DataFrame, oof: pd.DataFrame, near_pairs: pd.DataFrame,
+                 variables: pd.DataFrame, interpretable: bool, out: Path) -> dict:
+    """선택 모델의 영향요인·상호작용·FN 유형과 집중 조건·FP 조건·도메인 대조·2D 부분의존도(D-011)."""
+    X, y, g = _xyg(train)
+    an, params = cfg["analyze"], cfg["models"]["params"]
+    make = make_factory(chosen, params)
+    imp = permutation_importance_cv(X, y, g, make, config.SEEDS, cfg["cv"]["max_folds"], an["perm_repeats"], an["top_n"])
+    _write_csv(out / "importance.csv", imp)
+    var_a, var_b = pick_top_pair(imp, near_pairs)
+    top = imp["variable"].head(an["top_n"]).tolist()
+    k, aux = float(y.mean()), aux_k(y, g)
+    rank = oof.loc[oof["model"] == chosen, "rank_frac_median"].to_numpy()          # train 행 순서와 같다
+
+    fn = fn_types(oof, chosen, cfg["models"]["complexity_order"], k, aux)
+    fp_summary, fp_table = fp_analysis(train.data, rank, an["fp_budget"], [var_a, var_b])
+    _write_csv(out / "interaction_2x2.csv", interaction_2x2(train.data, var_a, var_b))
+    _write_csv(out / "fn_types.csv", fn)
+    _write_csv(out / "fn_concentration.csv", fn_concentration(train.data, rank, k, [var_a, var_b]))
+    _write_csv(out / "fp_conditions.csv", fp_table)
+    _write_csv(out / "domain_crosscheck.csv", domain_crosscheck(train.data, variables, top))
+    _write_csv(out / "pdp_2d.csv", pdp_2d(make, X, y, config.SEEDS[0], var_a, var_b, an["pdp_grid"]))
+
+    leak_rows = []
+    for name in an["leakage_explore_models"]:
+        ig = score_repeats(run_cv(X, y, g, make_factory(name, params), config.SEEDS, cfg["cv"]["max_folds"], ignore_groups=True), y)
+        leak_rows.append({"model": name, "f1_grouped_mean": float(scores.loc[scores["model"] == name, "f1"].mean()),
+                          "f1_ignoring_groups_mean": float(ig["f1"].mean()), "note": "사후 탐색(D-011)"})
+    _write_csv(out / "leakage_explore.csv", pd.DataFrame(leak_rows))
+
+    summary = {
+        "interpretable": interpretable, "top_variables": top, "pair": [var_a, var_b], "k": k, "aux_k": aux,
+        "fn_type_counts": fn["fn_type"].value_counts().reindex(list(FN_TYPES), fill_value=0).astype(int).to_dict(),
+        "fp_at_budget": fp_summary,
+    }
+    _write_json(out / "analysis_summary.json", summary)
+    return summary
 
 
 def main() -> None:
@@ -106,7 +151,9 @@ def main() -> None:
         for name, df in diag_tables.items():
             _write_csv(out / f"diagnose_{name}.csv", df)
 
-        chosen, summary = evaluate_line(train, cfg, diag, out)
+        chosen, summary, scores, oof = evaluate_line(train, cfg, diag, out)
+        near = diag_tables["pairs"].query("split == 'train'")
+        analysis = analyze_line(train, cfg, chosen, scores, oof, near, variables, summary["any_candidate_beats_floor"], out)
 
         warnings = diag["distribution_warning"]
         limitations = cfg["limitations"] + (
@@ -124,9 +171,9 @@ def main() -> None:
 
         print(
             f"[{line}] 선택 {chosen} CV F1 {summary['f1_mean']:.4f} ± {summary['f1_std']:.4f} "
-            f"(무작위보다 나음 {summary['beats_floor']}, 그룹 무시 시 {summary['f1_ignoring_groups_mean']:.4f}, "
-            f"입력 20개 {summary['f1_20_inputs_mean']:.4f}) | test {meta['n_test']}행, 표시 {meta['n_flag_actual']}개, "
-            f"확신도 1.0 비율 {np.mean(pred[FLAG_RATE_COL] == 1.0):.4f} → {out.relative_to(config.PROJECT_ROOT).as_posix()}",
+            f"(무작위보다 나음 {summary['beats_floor']}) | 상위 변수 {analysis['top_variables'][:3]} | "
+            f"FN 유형 {analysis['fn_type_counts']} | test {meta['n_test']}행, 표시 {meta['n_flag_actual']}개 "
+            f"→ {out.relative_to(config.PROJECT_ROOT).as_posix()}",
             flush=True,
         )
 
