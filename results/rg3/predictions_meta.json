@@ -14,13 +14,6 @@
     "train·test 분포 차이 경고 1개 변수(diagnose_shift.csv). 예측 확률의 절대값은 해석하지 않는다.",
     "어떤 후보 모델도 무작위 기준모델과 차이가 없다(selection.csv의 beats_floor). 기계 신호만으로는 학습되지 않는 제품군이다."
   ],
-  "alarm": {
-    "threshold": 0.015206540139286103,
-    "test_batches": 152,
-    "test_alarms": 60
-  },
-  "distribution_warning": [
-    "Clamp_Open_Position:train_constant"
-  ],
-  "output_type": "probability(prior_correction)"
+  "alarm": null,
+  "distribution_warning": null
 }

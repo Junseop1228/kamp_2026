@@ -30,6 +30,19 @@ CPU만 쓴다. 소요 시간은 PC에 따라 15~40분이며 대부분 가이드�
 | `figures/` | 보고서 그림 |
 | `run_record.json` | 실행 환경, seed, 시각, 커밋 해시 |
 
+## 평가 항목별 근거 파일
+
+경로는 `results/{cn7,rg3}/` 기준이다. 그림은 `results/figures/`에 있다.
+
+| 서면평가 항목 | 근거 파일 | 그림 |
+|---|---|---|
+| 1. 데이터 이해 및 진단 | `diagnose_summary.json`, `diagnose_rounding.csv`, `diagnose_outliers.csv`, `diagnose_pairs.csv`, `diagnose_shift.csv` | `fig1_*` |
+| 2. AI 예측모델 개발 | `cv_scores.csv`, `selection.csv`, `model_summary.json`, `leakage_contrast.csv`, `sensitivity_20.csv`, `block_split.csv` | `fig2_*` |
+| 3. 영향요인 및 오류분석 | `importance.csv`, `interaction_2x2.csv`, `pdp_2d.csv`, `fn_types.csv`, `fn_concentration.csv`, `fp_conditions.csv`, `domain_crosscheck.csv`, `leakage_explore.csv` | `fig3_*` |
+| 4. 현장 활용방안 | `budget_table.csv`, `sampling_combo.csv`, `alarm_labeled.csv`, `alarm_test.csv`, `prioritize_summary.json`, `predictions.csv`의 `flag_rate` | `fig4_*` |
+| 5. 창의성·차별성 | `model_summary.json`의 `calibration`, `fn_types.csv`의 신호 없음, `selection.csv`의 `beats_floor` | — |
+| 6. 코드 및 재현성 | `../run_record.json`, `environment.yml`, `tests/` | — |
+
 ## 예측 결과 파일
 
 과제 원문의 "테스트데이터"가 어느 파일인지 정의되어 있지 않아 두 해석 모두에 대한 예측을 낸다.
