@@ -1,0 +1,63 @@
+{
+  "selected_model": "random_forest",
+  "output_type": "probability(prior_correction)",
+  "f1_mean": 0.014545454545454545,
+  "f1_std": 0.01877810107252081,
+  "beats_floor": false,
+  "any_candidate_beats_floor": false,
+  "f1_ignoring_groups_mean": 0.004,
+  "f1_20_inputs_mean": 0.02545454545454546,
+  "block_split": [
+    {
+      "block": 0,
+      "rows": 238,
+      "eval_defects": 4,
+      "train_defects": 21,
+      "status": "ok",
+      "flagged": 6,
+      "caught": 0
+    },
+    {
+      "block": 1,
+      "rows": 236,
+      "eval_defects": 9,
+      "train_defects": 16,
+      "status": "ok",
+      "flagged": 4,
+      "caught": 0
+    },
+    {
+      "block": 2,
+      "rows": 236,
+      "eval_defects": 3,
+      "train_defects": 22,
+      "status": "ok",
+      "flagged": 6,
+      "caught": 0
+    },
+    {
+      "block": 3,
+      "rows": 236,
+      "eval_defects": 4,
+      "train_defects": 21,
+      "status": "ok",
+      "flagged": 6,
+      "caught": 0
+    },
+    {
+      "block": 4,
+      "rows": 236,
+      "eval_defects": 5,
+      "train_defects": 20,
+      "status": "ok",
+      "flagged": 6,
+      "caught": 0
+    }
+  ],
+  "calibration": {
+    "mean_predicted": 0.01187516141671296,
+    "defect_rate": 0.021150592216582064,
+    "brier": 0.020890705475435978,
+    "brier_prevalence_only": 0.020703244665469914
+  }
+}

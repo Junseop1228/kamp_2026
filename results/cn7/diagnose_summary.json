@@ -1,0 +1,71 @@
+{
+  "line": "CN7",
+  "imbalance": {
+    "train": {
+      "n_rows": 1211,
+      "n_missing": 0,
+      "n_defects": 17,
+      "defect_rate": 0.014037985136251032,
+      "n_defect_groups": 14
+    },
+    "test": {
+      "n_rows": 35239,
+      "n_missing": 0
+    }
+  },
+  "groups": {
+    "train": {
+      "n_rows": 1211,
+      "n_groups": 606,
+      "size_1": 1,
+      "size_2": 605,
+      "size_3plus": 0,
+      "rows_in_multi_share": 0.9991742361684558,
+      "pairs_0_0": 591,
+      "pairs_0_1": 11,
+      "pairs_1_1": 3,
+      "mixed_groups": 11,
+      "defect_groups": 14
+    },
+    "test": {
+      "n_rows": 35239,
+      "n_groups": 28771,
+      "size_1": 22303,
+      "size_2": 6468,
+      "size_3plus": 0,
+      "rows_in_multi_share": 0.36709327733477115
+    }
+  },
+  "constant_features": {
+    "train": [
+      "Clamp_Open_Position"
+    ],
+    "test": []
+  },
+  "twin_adjacency": {
+    "train": {
+      "n_pairs": 605,
+      "adjacent_share": 0.9421487603305785,
+      "row_order_trusted": true
+    },
+    "test": {
+      "n_pairs": 6468,
+      "adjacent_share": 0.9998453927025356,
+      "row_order_trusted": true
+    }
+  },
+  "defect_concentration": {
+    "n_defects": 17,
+    "first_row": 47,
+    "last_row": 120,
+    "first_id": 47,
+    "last_id": 120,
+    "span_rows": 74,
+    "span_share": 0.0611065235342692
+  },
+  "f1_floor": 0.014037985136251032,
+  "f1_ceiling": 0.7555555555555555,
+  "distribution_warning": [
+    "Clamp_Open_Position:train_constant"
+  ]
+}

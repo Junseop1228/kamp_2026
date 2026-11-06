@@ -1,0 +1,5 @@
+var_a,level_a,var_b,level_b,rows,defects,defect_rate
+Hopper_Temperature,낮음,Barrel_Temperature_3,낮음,372,8,0.021505376344086023
+Hopper_Temperature,낮음,Barrel_Temperature_3,높음,224,5,0.022321428571428572
+Hopper_Temperature,높음,Barrel_Temperature_3,낮음,352,10,0.028409090909090908
+Hopper_Temperature,높음,Barrel_Temperature_3,높음,234,2,0.008547008547008548

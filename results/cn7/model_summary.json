@@ -1,0 +1,63 @@
+{
+  "selected_model": "logistic",
+  "output_type": "probability(prior_correction)",
+  "f1_mean": 0.44324324324324327,
+  "f1_std": 0.061367158075410454,
+  "beats_floor": true,
+  "any_candidate_beats_floor": true,
+  "f1_ignoring_groups_mean": 0.4261742424242424,
+  "f1_20_inputs_mean": 0.40540540540540543,
+  "block_split": [
+    {
+      "block": 0,
+      "rows": 243,
+      "eval_defects": 17,
+      "train_defects": 0,
+      "status": "학습 불가(학습 블록에 불량 없음)",
+      "flagged": 0,
+      "caught": 0
+    },
+    {
+      "block": 1,
+      "rows": 242,
+      "eval_defects": 0,
+      "train_defects": 17,
+      "status": "ok",
+      "flagged": 4,
+      "caught": 0
+    },
+    {
+      "block": 2,
+      "rows": 242,
+      "eval_defects": 0,
+      "train_defects": 17,
+      "status": "ok",
+      "flagged": 4,
+      "caught": 0
+    },
+    {
+      "block": 3,
+      "rows": 242,
+      "eval_defects": 0,
+      "train_defects": 17,
+      "status": "ok",
+      "flagged": 4,
+      "caught": 0
+    },
+    {
+      "block": 4,
+      "rows": 242,
+      "eval_defects": 0,
+      "train_defects": 17,
+      "status": "ok",
+      "flagged": 6,
+      "caught": 0
+    }
+  ],
+  "calibration": {
+    "mean_predicted": 0.01388151466864078,
+    "defect_rate": 0.014037985136251032,
+    "brier": 0.01117819702457289,
+    "brier_prevalence_only": 0.01384092010956543
+  }
+}

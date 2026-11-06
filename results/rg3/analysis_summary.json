@@ -1,0 +1,30 @@
+{
+  "interpretable": false,
+  "top_variables": [
+    "Hopper_Temperature",
+    "Barrel_Temperature_3",
+    "Max_Injection_Speed",
+    "Barrel_Temperature_5",
+    "Mold_Temperature_4"
+  ],
+  "pair": [
+    "Hopper_Temperature",
+    "Barrel_Temperature_3"
+  ],
+  "k": 0.021150592216582064,
+  "aux_k": 0.04230118443316413,
+  "fn_type_counts": {
+    "잡힘": 0,
+    "경계": 1,
+    "모델 차이": 0,
+    "신호 없음": 24
+  },
+  "fp_at_budget": {
+    "budget": 0.1,
+    "flagged": 82,
+    "caught": 2,
+    "structural_fp": 2,
+    "condition_fp": 78,
+    "condition_fp_rate": 0.06890459363957598
+  }
+}

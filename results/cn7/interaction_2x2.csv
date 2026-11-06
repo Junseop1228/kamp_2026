@@ -1,0 +1,5 @@
+var_a,level_a,var_b,level_b,rows,defects,defect_rate
+Clamp_Close_Time,낮음,Max_Injection_Speed,낮음,302,0,0.0
+Clamp_Close_Time,낮음,Max_Injection_Speed,높음,348,0,0.0
+Clamp_Close_Time,높음,Max_Injection_Speed,낮음,317,11,0.03470031545741325
+Clamp_Close_Time,높음,Max_Injection_Speed,높음,244,6,0.02459016393442623

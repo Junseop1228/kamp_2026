@@ -1,0 +1,30 @@
+{
+  "interpretable": true,
+  "top_variables": [
+    "Clamp_Close_Time",
+    "Max_Injection_Speed",
+    "Plasticizing_Position",
+    "Hopper_Temperature",
+    "Mold_Temperature_4"
+  ],
+  "pair": [
+    "Clamp_Close_Time",
+    "Max_Injection_Speed"
+  ],
+  "k": 0.014037985136251032,
+  "aux_k": 0.028075970272502065,
+  "fn_type_counts": {
+    "잡힘": 8,
+    "경계": 1,
+    "모델 차이": 3,
+    "신호 없음": 5
+  },
+  "fp_at_budget": {
+    "budget": 0.1,
+    "flagged": 114,
+    "caught": 14,
+    "structural_fp": 8,
+    "condition_fp": 92,
+    "condition_fp_rate": 0.07776838546069316
+  }
+}
